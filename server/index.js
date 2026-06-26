@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url"
 import path from "node:path"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import nodemailer from "nodemailer"
+import { Resend } from "resend"
 import { randomInt } from "crypto"
 import { promises as dns } from "dns"
 import {
@@ -26,17 +26,7 @@ app.use(express.json())
 const PORT = process.env.PORT || 4000
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me"
 
-// Gmail transporter — only built if credentials are present in .env
-const transporter =
-  process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD
-    ? nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_APP_PASSWORD,
-        },
-      })
-    : null
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 function sign(user) {
   return jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: "7d" })
@@ -72,13 +62,13 @@ async function isDomainValid(email) {
 
 // ── Shared email wrapper ───────────────────────────────────────────────────
 async function sendMail(to, subject, html) {
-  if (!transporter) {
-    console.log(`⚠  Gmail not configured — would send "${subject}" to ${to}`)
+  if (!resend) {
+    console.log(`⚠  Resend not configured — would send "${subject}" to ${to}`)
     return
   }
   try {
-    await transporter.sendMail({
-      from: `"CIPHER//" <${process.env.GMAIL_USER}>`,
+    await resend.emails.send({
+      from: "CIPHER// <onboarding@resend.dev>",
       to,
       subject,
       html,
@@ -476,7 +466,7 @@ initStore()
   .then(() =>
     app.listen(PORT, () => {
       console.log(`\n  CIPHER API ▸ http://localhost:${PORT}`)
-      console.log(`  Gmail mailer: ${transporter ? "enabled ✓" : "disabled (set GMAIL creds in .env)"}\n`)
+      console.log(`  Resend mailer: ${resend ? "enabled ✓" : "disabled (set RESEND_API_KEY in .env)"}\n`)
     })
   )
   .catch((err) => {
