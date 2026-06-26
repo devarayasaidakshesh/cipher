@@ -1,0 +1,38 @@
+{
+  "name": "cipher",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "CIPHER — techwear streetwear storefront (Vite + React 19 + R3F) with an Express auth/catalog API.",
+  "author": "Devaraya Sai Dakshesh",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devarayasaidakshesh/cipher.git"
+  },
+  "homepage": "https://github.com/devarayasaidakshesh/cipher#readme",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@tailwindcss/vite": "^4.3.1",
+    "framer-motion": "^12.42.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.0",
+    "tailwindcss": "^4.3.1",
+    "three": "^0.185.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "oxlint": "^1.69.0",
+    "vite": "^8.1.0"
+  }
+}
