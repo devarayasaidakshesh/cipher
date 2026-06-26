@@ -279,14 +279,14 @@ app.post("/api/register", async (req, res) => {
     await updateUserByEmail(email, {
       verifyToken,
       verifyTokenExpires: Date.now() + 24 * 60 * 60 * 1000,
-      passwordHash: await bcrypt.hash(password, 10),
+      passwordHash: await bcrypt.hash(password, 8),
       name: name || existing.name,
     })
     await sendVerificationEmail(email, name || existing.name, verifyToken)
     return res.status(200).json({ pending: true, email })
   }
 
-  const passwordHash = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(password, 8)
   const verifyToken = newId("vrf")
   const user = {
     id: newId("usr"),
@@ -404,7 +404,7 @@ app.post("/api/auth/reset-password", async (req, res) => {
   if (payload.purpose !== "reset")
     return res.status(400).json({ error: "Invalid token" })
 
-  const passwordHash = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(password, 8)
   const updated = await updateUserByEmail(payload.email, {
     passwordHash,
     resetOtp: null,
