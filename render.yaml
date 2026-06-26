@@ -1,0 +1,41 @@
+# Render Blueprint — single-host deployment.
+# Docs: https://render.com/docs/blueprints
+#
+# What this does: ONE web service runs the Express API (server/), which also
+# serves the built Vite frontend (dist/). One URL, no CORS, no cross-service
+# env wiring. The frontend calls /api/* same-origin (VITE_API_URL unset → "").
+#
+# How to use:
+#   1. Push this repo to GitHub.
+#   2. Render dashboard → New → Blueprint → pick this repo.
+#   3. Set the three `sync: false` secrets in the dashboard (JWT_SECRET,
+#      GMAIL_USER, GMAIL_APP_PASSWORD) — they are NOT in the repo.
+#   4. Apply. Render builds + deploys.
+#
+# Caveat: Render free web services have no persistent disk → server/db.json
+# is wiped on every redeploy/restart. Fine for a demo; for real users, swap
+# store.js for a managed DB (see DEPLOY.md).
+
+services:
+  - type: web
+    name: cipher
+    runtime: node
+    plan: free
+    # Build the frontend (→ dist/) then install the server's deps.
+    buildCommand: npm install && npm run build && cd server && npm install
+    # One process serves API + static dist/.
+    startCommand: node server/index.js
+    healthcheckPath: /api/validate-email
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # VITE_API_URL intentionally unset → frontend calls /api/* same-origin.
+      # Secrets (sync: false) — set these in the Render dashboard:
+      - key: JWT_SECRET
+        sync: false
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      # PORT is injected by Render automatically — do not set it here.

@@ -1,6 +1,9 @@
 import "dotenv/config"
 import express from "express"
 import cors from "cors"
+import { existsSync } from "node:fs"
+import { fileURLToPath } from "node:url"
+import path from "node:path"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import nodemailer from "nodemailer"
@@ -453,6 +456,19 @@ app.post("/api/orders", auth, async (req, res) => {
 
   res.json({ order, user: publicUser(updated) })
 })
+
+// ── Serve the built frontend (single-host production) ───────────────────────
+// In production the same process serves the API (/api/*) AND the built Vite
+// assets in ../dist. Skipped in dev (no dist/ exists) — run `npm run dev` and
+// the API separately. Registered AFTER all /api routes so they take precedence;
+// the regex excludes /api so undefined API paths 404 as JSON, not as HTML.
+const DIST_DIR = fileURLToPath(new URL("../dist", import.meta.url))
+if (existsSync(DIST_DIR)) {
+  app.use(express.static(DIST_DIR))
+  app.get(/^\/(?!api).*/, (_req, res) => {
+    res.sendFile(path.join(DIST_DIR, "index.html"))
+  })
+}
 
 app.listen(PORT, () => {
   console.log(`\n  CIPHER API ▸ http://localhost:${PORT}`)

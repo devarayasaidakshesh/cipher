@@ -1,5 +1,9 @@
 // Thin API client for the CIPHER backend.
-const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000"
+// - Dev: VITE_API_URL (from .env) points at the local API, e.g. http://localhost:4000.
+// - Prod (single-host): leave VITE_API_URL unset → "" → calls are same-origin
+//   ("/api/..."), so the frontend and API share one URL.
+// - Prod (two-host): set VITE_API_URL to the deployed API URL.
+const BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:4000" : "")
 
 let token = localStorage.getItem("cipher.token") || ""
 
