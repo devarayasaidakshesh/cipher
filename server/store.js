@@ -76,7 +76,7 @@ const defaultFor = (k) => JSONB_KEYS.has(k) ? [] : k === "verified" ? false : nu
 
 // ── Public API — same shape regardless of backend ─────────────────────────
 
-const usePostgres = !!process.env.DATABASE_URL
+const usePostgres = !!(process.env.DATABASE_URL || "").trim()
 
 export async function initStore() {
   if (!usePostgres) {
