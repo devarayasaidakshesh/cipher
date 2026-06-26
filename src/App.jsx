@@ -17,26 +17,33 @@ function ScrollToTop() {
   return null
 }
 
+// Redirects to /verify-pending if the user has registered but not verified yet
+function PendingGuard({ children }) {
+  const { pathname } = useLocation()
+  const isPending = !!localStorage.getItem("cipher.pendingEmail")
+  const allowed = pathname === "/verify-pending" || pathname.startsWith("/verify")
+  if (isPending && !allowed) return <Navigate to="/verify-pending" replace />
+  return children
+}
+
 export default function App() {
   return (
     <>
       <ScrollToTop />
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          {/* The Vault replaces the old Shop PLP */}
-          <Route path="/vault" element={<Vault />} />
+          <Route path="/" element={<PendingGuard><Home /></PendingGuard>} />
+          <Route path="/vault" element={<PendingGuard><Vault /></PendingGuard>} />
           <Route path="/shop" element={<Navigate to="/vault" replace />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/account" element={<Account />} />
-          {/* Signup is now a modal triggered from the nav; keep verify routes */}
+          <Route path="/product/:id" element={<PendingGuard><ProductDetail /></PendingGuard>} />
+          <Route path="/checkout" element={<PendingGuard><Checkout /></PendingGuard>} />
+          <Route path="/wishlist" element={<PendingGuard><Wishlist /></PendingGuard>} />
+          <Route path="/account" element={<PendingGuard><Account /></PendingGuard>} />
           <Route path="/signup" element={<Navigate to="/" replace />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/verify-pending" element={<VerifyPending />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<Home />} />
+          <Route path="*" element={<PendingGuard><Home /></PendingGuard>} />
         </Route>
       </Routes>
     </>

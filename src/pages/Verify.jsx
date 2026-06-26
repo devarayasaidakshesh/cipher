@@ -21,8 +21,8 @@ export default function Verify() {
     }
     verify(token)
       .then(() => {
+        localStorage.removeItem("cipher.pendingEmail")
         setStatus("success")
-        // give them a moment to read it, then head to the shop
         setTimeout(() => navigate("/shop"), 2500)
       })
       .catch((e) => {

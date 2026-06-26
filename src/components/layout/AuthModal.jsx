@@ -62,6 +62,7 @@ export default function AuthModal() {
     try {
       if (mode === "signup") {
         await register(email, password, name)
+        localStorage.setItem("cipher.pendingEmail", email)
         close()
         navigate("/verify-pending")
       } else {
