@@ -11,11 +11,12 @@ import { randomInt } from "crypto"
 import { promises as dns } from "dns"
 import {
   findUserByEmail,
+  findUserByVerifyToken,
   createUser,
   updateUserByEmail,
   publicUser,
   newId,
-  readRaw,
+  initStore,
 } from "./store.js"
 
 const app = express()
@@ -308,8 +309,7 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/verify", async (req, res) => {
   const { token } = req.body
   if (!token) return res.status(400).json({ error: "Verification token required" })
-  const data = await readRaw()
-  const user = data.users.find((u) => u.verifyToken === token)
+  const user = await findUserByVerifyToken(token)
   if (!user) return res.status(400).json({ error: "Invalid verification link" })
   if (!user.verifyTokenExpires || user.verifyTokenExpires < Date.now())
     return res.status(400).json({ error: "This verification link has expired" })
@@ -470,7 +470,17 @@ if (existsSync(DIST_DIR)) {
   })
 }
 
-app.listen(PORT, () => {
-  console.log(`\n  CIPHER API ▸ http://localhost:${PORT}`)
-  console.log(`  Gmail mailer: ${transporter ? "enabled ✓" : "disabled (set GMAIL creds in .env)"}\n`)
-})
+// Ensure the DB schema exists, then start listening. Fails fast with a clear
+// message if DATABASE_URL is unreachable.
+initStore()
+  .then(() =>
+    app.listen(PORT, () => {
+      console.log(`\n  CIPHER API ▸ http://localhost:${PORT}`)
+      console.log(`  Gmail mailer: ${transporter ? "enabled ✓" : "disabled (set GMAIL creds in .env)"}\n`)
+    })
+  )
+  .catch((err) => {
+    console.error("\n  ✖ Store init failed — is DATABASE_URL set and reachable?")
+    console.error(`  ${err.message}\n`)
+    process.exit(1)
+  })

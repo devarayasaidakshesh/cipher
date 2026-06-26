@@ -4,17 +4,16 @@
 # What this does: ONE web service runs the Express API (server/), which also
 # serves the built Vite frontend (dist/). One URL, no CORS, no cross-service
 # env wiring. The frontend calls /api/* same-origin (VITE_API_URL unset → "").
+# User data persists in a managed Postgres DB (Render/Neon) — see DATABASE_URL.
 #
 # How to use:
 #   1. Push this repo to GitHub.
 #   2. Render dashboard → New → Blueprint → pick this repo.
-#   3. Set the three `sync: false` secrets in the dashboard (JWT_SECRET,
-#      GMAIL_USER, GMAIL_APP_PASSWORD) — they are NOT in the repo.
-#   4. Apply. Render builds + deploys.
-#
-# Caveat: Render free web services have no persistent disk → server/db.json
-# is wiped on every redeploy/restart. Fine for a demo; for real users, swap
-# store.js for a managed DB (see DEPLOY.md).
+#   3. Set the `sync: false` secrets in the dashboard (they are NOT in the repo):
+#        DATABASE_URL  — Postgres connection string (Render Postgres or Neon)
+#        JWT_SECRET    — long random string
+#        GMAIL_USER / GMAIL_APP_PASSWORD — for verification emails (optional)
+#   4. Apply. Render builds + deploys. The `users` table auto-creates on boot.
 
 services:
   - type: web
@@ -32,6 +31,8 @@ services:
         value: production
       # VITE_API_URL intentionally unset → frontend calls /api/* same-origin.
       # Secrets (sync: false) — set these in the Render dashboard:
+      - key: DATABASE_URL
+        sync: false
       - key: JWT_SECRET
         sync: false
       - key: GMAIL_USER
@@ -39,3 +40,10 @@ services:
       - key: GMAIL_APP_PASSWORD
         sync: false
       # PORT is injected by Render automatically — do not set it here.
+  # Optional: a Render Postgres instance provisioned alongside the app.
+  # Uncomment to have Render create one and wire DATABASE_URL automatically.
+  # - type: pserv
+  #   name: cipher-db
+  #   plan: free
+  #   ipAllowList: []
+
