@@ -68,7 +68,7 @@ async function sendMail(to, subject, html) {
   }
   try {
     await resend.emails.send({
-      from: "CIPHER// <onboarding@resend.dev>",
+      from: "CIPHER// <onboarding@shopatcipher.xyz>",
       to,
       subject,
       html,
